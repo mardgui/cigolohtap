@@ -70,10 +70,15 @@ class State:
         return State(new_grid)
 
     def set_init_pos(self):
+        is_looping = True
         for i in range(0,self.nbr):
             for j in range(0,self.nbc):
                 if self.grid[i][j]=='$':
                     self.pos = (i,j)
+                    is_looping = False
+                    break
+            if not is_looping:
+                break
                 
     def move(self, direction, x, y):
         self.grid[x][y] = 'x'
@@ -116,7 +121,7 @@ init_state.set_init_pos()
 problem = Pathologic(init_state)
 
 # example of bfs graph search
-node = breadth_first_graph_search(problem)
+node = breadth_first_tree_search(problem)
 
 # example of print
 path = node.path()
