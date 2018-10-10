@@ -218,7 +218,7 @@ def readInstanceFile(filename):
 # Launch the search #
 #####################
 
-'''grid_init = readInstanceFile(sys.argv[1])
+grid_init = readInstanceFile(sys.argv[1])
 init_state = State(grid_init)
 
 problem = Pathologic(init_state)
@@ -234,4 +234,4 @@ path.reverse()
 print('Number of moves: ' + str(node.depth))
 for n in path:
     print(n.state)  # assuming that the __str__ function of state outputs the correct format
-    print()'''
+    print()
