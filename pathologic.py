@@ -11,36 +11,115 @@ class Pathologic(Problem):
     def __init__(self, initial, goal=None):
         self.initial = initial 
         self.goal = goal
-        
+        self.initial.set_init_pos()
+        self.initial.set_init_balls()
+        self.nbNodesExplored = 0
 
     def successor(self, state):
-        i,j = state.get_pos()
+        self.nbNodesExplored = self.nbNodesExplored + 1
+        i,j = state.pos
+        
+        ## 
+        neigbors_balls = []
+        if j+1 < state.nbc and state.grid[i][j+1] == '_':
+            neigbors_balls.append([i,j+1]) 
+                
+        if j-1 >= 0 and state.grid[i][j-1] == '_':
+            neigbors_balls.append([i,j-1]) 
+            
+        if i+1 < state.nbr and state.grid[i+1][j] == '_':
+            neigbors_balls.append([i+1,j]) 
+            
+        if i-1 >= 0 and state.grid[i-1][j] == '_':
+            neigbors_balls.append([i-1,j]) 
+            
+        for k in range(0,len(neigbors_balls)):
+            pos = neigbors_balls[k]
+            x = pos[0]
+            y = pos[1]
+            nb_access = 0
+            if y+1 < state.nbc and state.grid[x][y+1] in ['0','_']:
+                nb_access = nb_access + 1
+            if y-1 >= 0 and state.grid[x][y-1] in ['0','_']:
+                nb_access = nb_access + 1
+            if x+1 < state.nbr and state.grid[x+1][y] in ['0','_']:
+                nb_access = nb_access + 1  
+            if x-1 >=0 and state.grid[x-1][y] in  ['0','_']:
+                nb_access = nb_access + 1  
+            if nb_access == 0 and state.nb_balls > 1: 
+                return
+                yield
+
+
+
+        ## check if the map is split into 2 parts and so if the problem is stil solvable
+        # check for an horizontal split
+        horizontal = True
+        for k in range(0,state.nbc):
+            if k != j and state.grid[i][k] in ['0','_']:
+                if (i-1 >= 0 and state.grid[i-1][k] in ['0','_']) or (i+1 < state.nbr and state.grid[i+1][k] in ['0','_']):
+                    horizontal = False
+                    break
+        # check if circles in the bottom and the up part
+        if horizontal == True:
+            up = False
+            down = False
+            for k in range(0,state.nb_balls):
+                ball = state.balls[k]
+                if ball[0]-i < 0:
+                    up = True
+                elif ball[0]-i > 0:
+                    down = True
+                if up == True and down == True:
+                   return
+                   yield 
+                   
+        # check for a vertical split
+        vertical = True
+        for k in range(0,state.nbr):
+            if k != i and state.grid[k][j] in ['0','_']:
+                if (j-1 >= 0 and state.grid[k][j-1] in ['0','_']) or (j+1 < state.nbc and state.grid[k][j+1] in ['0','_']):
+                    vertical = False
+                    break
+        # check if circles in the left and in the right part
+        if vertical == True:
+            left = False
+            right = False
+            for k in range(0,state.nb_balls):
+                ball = state.balls[k]
+                if ball[1]-j < 0:
+                    left = True
+                elif ball[1]-j > 0:
+                    right = True
+                if left == True and right == True:
+                   return
+                   yield 
+            
+            
+            
+        ## look wich actions is possible
         if j+1 < state.nbc and state.grid[i][j+1] in ['0','_']:
             newState = state.clone()
-            newState.move('right',i,j)
+            newState.move('right')
             yield ('right',newState)
-        
+            
         if j-1 >= 0 and state.grid[i][j-1] in ['0','_']:
             newState = state.clone()
-            newState.move('left',i,j)
+            newState.move('left')
             yield ('left',newState)
-            
+                
         if i+1 < state.nbr and state.grid[i+1][j] in ['0','_']:
             newState = state.clone()
-            newState.move('down',i,j)
+            newState.move('down')
             yield ('down',newState)
-            
+                
         if i-1 >= 0 and state.grid[i-1][j] in ['0','_']:
             newState = state.clone()
-            newState.move('up',i,j)
+            newState.move('up')
             yield ('up',newState)
         
     def goal_test(self, state):
-        for i in range(0,state.nbr):
-            for j in range(0,state.nbc):
-                if state.grid[i][j]=='_':
-                    return False
-        return True
+        return state.nb_balls == 0
 
 ###############
 # State class #
@@ -51,6 +130,9 @@ class State:
         self.nbr = len(grid) # nb of row
         self.nbc = len(grid[0])
         self.grid = grid
+        self.pos = None
+        self.nb_balls = 0
+        self.balls = []
 
     def __str__(self):
         s = ""
@@ -67,7 +149,11 @@ class State:
         for i in range (0,self.nbr):
             for j in range(0,self.nbc):
                 new_grid[i][j] = self.grid[i][j]
-        return State(new_grid)
+        new_state = State(new_grid)
+        new_state.pos = self.pos
+        new_state.nb_balls = self.nb_balls
+        new_state.balls = list(self.balls)
+        return new_state
 
     def set_init_pos(self):
         is_looping = True
@@ -79,25 +165,43 @@ class State:
                     break
             if not is_looping:
                 break
+            
+    def set_init_balls(self):
+        for i in range(0,self.nbr):
+            for j in range(0,self.nbc):
+                if self.grid[i][j]=='_':
+                    self.nb_balls = self.nb_balls + 1
+                    self.balls.append([i,j])
                 
-    def move(self, direction, x, y):
+    def move(self, direction):
+        x,y = self.pos
         self.grid[x][y] = 'x'
         if direction == 'left':
+            if self.grid[x][y-1] == '_':
+                self.nb_balls = self.nb_balls-1
+                self.balls.remove([x,y-1])
             self.grid[x][y-1] = '$'
             self.pos = (x,y-1)
         elif direction == 'right':
+            if self.grid[x][y+1] == '_':
+                self.nb_balls = self.nb_balls-1
+                self.balls.remove([x,y+1])
             self.grid[x][y+1] = '$'
             self.pos = (x,y+1)
         elif direction == 'up':
+            if self.grid[x-1][y] == '_':
+                self.nb_balls = self.nb_balls-1
+                self.balls.remove([x-1,y])
             self.grid[x-1][y] = '$'
             self.pos = (x-1,y)
         elif direction == 'down':
+            if self.grid[x+1][y] == '_':
+                self.nb_balls = self.nb_balls-1
+                self.balls.remove([x+1,y])
             self.grid[x+1][y] = '$'
             self.pos = (x+1,y)
         else:
             raise ValueError('Impossible to move in this direction.')
-    def get_pos(self):
-        return self.pos
 
 ######################
 # Auxiliary function #
@@ -114,9 +218,8 @@ def readInstanceFile(filename):
 # Launch the search #
 #####################
 
-grid_init = readInstanceFile(sys.argv[1])
+'''grid_init = readInstanceFile(sys.argv[1])
 init_state = State(grid_init)
-init_state.set_init_pos()
 
 problem = Pathologic(init_state)
 
@@ -128,8 +231,7 @@ path = node.path()
 path.reverse()
 
 
-
 print('Number of moves: ' + str(node.depth))
 for n in path:
     print(n.state)  # assuming that the __str__ function of state outputs the correct format
-    print()
+    print()'''
