@@ -9,7 +9,7 @@ from search import *
 class Pathologic(Problem):
     
     def __init__(self, initial, goal=None):
-        self.initial = initial 
+        self.initial = initial
         self.goal = goal
         self.initial.set_init_pos()
         self.initial.set_init_circles()
@@ -218,20 +218,22 @@ def readInstanceFile(filename):
 # Launch the search #
 #####################
 
-grid_init = readInstanceFile(sys.argv[1])
-init_state = State(grid_init)
+if __name__ == "__main__":
 
-problem = Pathologic(init_state)
+    grid_init = readInstanceFile(sys.argv[1])
+    init_state = State(grid_init)
 
-# using bfs tree search
-node = breadth_first_tree_search(problem)
+    problem = Pathologic(init_state)
 
-# example of print
-path = node.path()
-path.reverse()
+    # using bfs tree search
+    node = breadth_first_tree_search(problem)
+
+    # example of print
+    path = node.path()
+    path.reverse()
 
 
-print('Number of moves: ' + str(node.depth))
-for n in path:
-    print(n.state)  # assuming that the __str__ function of state outputs the correct format
-    print()
+    print('Number of moves: ' + str(node.depth))
+    for n in path:
+        print(n.state)  # assuming that the __str__ function of state outputs the correct format
+        print()
