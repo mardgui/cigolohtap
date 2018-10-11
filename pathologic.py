@@ -12,7 +12,7 @@ class Pathologic(Problem):
         self.initial = initial 
         self.goal = goal
         self.initial.set_init_pos()
-        self.initial.set_init_balls()
+        self.initial.set_init_circles()
         self.nbNodesExplored = 0
 
     def successor(self, state):
@@ -20,21 +20,21 @@ class Pathologic(Problem):
         i,j = state.pos
         
         ## 
-        neigbors_balls = []
+        neigbors_circles = []
         if j+1 < state.nbc and state.grid[i][j+1] == '_':
-            neigbors_balls.append([i,j+1]) 
+            neigbors_circles.append([i,j+1]) 
                 
         if j-1 >= 0 and state.grid[i][j-1] == '_':
-            neigbors_balls.append([i,j-1]) 
+            neigbors_circles.append([i,j-1]) 
             
         if i+1 < state.nbr and state.grid[i+1][j] == '_':
-            neigbors_balls.append([i+1,j]) 
+            neigbors_circles.append([i+1,j]) 
             
         if i-1 >= 0 and state.grid[i-1][j] == '_':
-            neigbors_balls.append([i-1,j]) 
+            neigbors_circles.append([i-1,j]) 
             
-        for k in range(0,len(neigbors_balls)):
-            pos = neigbors_balls[k]
+        for k in range(0,len(neigbors_circles)):
+            pos = neigbors_circles[k]
             x = pos[0]
             y = pos[1]
             nb_access = 0
@@ -46,7 +46,7 @@ class Pathologic(Problem):
                 nb_access = nb_access + 1  
             if x-1 >=0 and state.grid[x-1][y] in  ['0','_']:
                 nb_access = nb_access + 1  
-            if nb_access == 0 and state.nb_balls > 1: 
+            if nb_access == 0 and state.nb_circles > 1: 
                 return
                 yield
 
@@ -64,11 +64,11 @@ class Pathologic(Problem):
         if horizontal == True:
             up = False
             down = False
-            for k in range(0,state.nb_balls):
-                ball = state.balls[k]
-                if ball[0]-i < 0:
+            for k in range(0,state.nb_circles):
+                circle = state.circles[k]
+                if circle[0]-i < 0:
                     up = True
-                elif ball[0]-i > 0:
+                elif circle[0]-i > 0:
                     down = True
                 if up == True and down == True:
                    return
@@ -85,11 +85,11 @@ class Pathologic(Problem):
         if vertical == True:
             left = False
             right = False
-            for k in range(0,state.nb_balls):
-                ball = state.balls[k]
-                if ball[1]-j < 0:
+            for k in range(0,state.nb_circles):
+                circle = state.circles[k]
+                if circle[1]-j < 0:
                     left = True
-                elif ball[1]-j > 0:
+                elif circle[1]-j > 0:
                     right = True
                 if left == True and right == True:
                    return
@@ -119,7 +119,7 @@ class Pathologic(Problem):
             yield ('up',newState)
         
     def goal_test(self, state):
-        return state.nb_balls == 0
+        return state.nb_circles == 0
 
 ###############
 # State class #
@@ -131,8 +131,8 @@ class State:
         self.nbc = len(grid[0])
         self.grid = grid
         self.pos = None
-        self.nb_balls = 0
-        self.balls = []
+        self.nb_circles = 0
+        self.circles = []
 
     def __str__(self):
         s = ""
@@ -151,8 +151,8 @@ class State:
                 new_grid[i][j] = self.grid[i][j]
         new_state = State(new_grid)
         new_state.pos = self.pos
-        new_state.nb_balls = self.nb_balls
-        new_state.balls = list(self.balls)
+        new_state.nb_circles = self.nb_circles
+        new_state.circles = list(self.circles)
         return new_state
 
     def set_init_pos(self):
@@ -166,38 +166,38 @@ class State:
             if not is_looping:
                 break
             
-    def set_init_balls(self):
+    def set_init_circles(self):
         for i in range(0,self.nbr):
             for j in range(0,self.nbc):
                 if self.grid[i][j]=='_':
-                    self.nb_balls = self.nb_balls + 1
-                    self.balls.append([i,j])
+                    self.nb_circles = self.nb_circles + 1
+                    self.circles.append([i,j])
                 
     def move(self, direction):
         x,y = self.pos
         self.grid[x][y] = 'x'
         if direction == 'left':
             if self.grid[x][y-1] == '_':
-                self.nb_balls = self.nb_balls-1
-                self.balls.remove([x,y-1])
+                self.nb_circles = self.nb_circles-1
+                self.circles.remove([x,y-1])
             self.grid[x][y-1] = '$'
             self.pos = (x,y-1)
         elif direction == 'right':
             if self.grid[x][y+1] == '_':
-                self.nb_balls = self.nb_balls-1
-                self.balls.remove([x,y+1])
+                self.nb_circles = self.nb_circles-1
+                self.circles.remove([x,y+1])
             self.grid[x][y+1] = '$'
             self.pos = (x,y+1)
         elif direction == 'up':
             if self.grid[x-1][y] == '_':
-                self.nb_balls = self.nb_balls-1
-                self.balls.remove([x-1,y])
+                self.nb_circles = self.nb_circles-1
+                self.circles.remove([x-1,y])
             self.grid[x-1][y] = '$'
             self.pos = (x-1,y)
         elif direction == 'down':
             if self.grid[x+1][y] == '_':
-                self.nb_balls = self.nb_balls-1
-                self.balls.remove([x+1,y])
+                self.nb_circles = self.nb_circles-1
+                self.circles.remove([x+1,y])
             self.grid[x+1][y] = '$'
             self.pos = (x+1,y)
         else:
@@ -223,7 +223,7 @@ init_state = State(grid_init)
 
 problem = Pathologic(init_state)
 
-# example of bfs graph search
+# using bfs tree search
 node = breadth_first_tree_search(problem)
 
 # example of print
