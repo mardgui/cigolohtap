@@ -12,7 +12,7 @@ from search import *
 import time
 import os
 
-def exp(filepath, search_mode, nb_runs):
+def exp(filepath, search_mode):
     grid_init = readInstanceFile(filepath)
     init_state = State(grid_init)
     
@@ -35,7 +35,6 @@ def exp(filepath, search_mode, nb_runs):
     print('\tTime : ' + str(interval))
     print('\tNB node explored : ' + str(problem.nb_explored_nodes))
     
-    # example of print
     path = node.path()
     path.reverse()
     
@@ -50,4 +49,4 @@ if __name__ == "__main__":
         print("\n\nInstance " + instance + " :")
         for search_mode in search_modes:
             print("\n" + search_mode)
-            exp("instances/" + instance, search_mode, 10)
+            exp("instances/" + instance, search_mode)
