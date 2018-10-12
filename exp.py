@@ -4,6 +4,7 @@
 Created on Wed Oct 10 18:54:51 2018
 
 @author: calbert
+@author: guimard
 """
 
 from pathologic import *
@@ -11,7 +12,7 @@ from search import *
 import time
 import os
 
-def exp(filepath, search_mode):
+def exp(filepath, search_mode, nb_runs):
     grid_init = readInstanceFile(filepath)
     init_state = State(grid_init)
     
@@ -30,9 +31,9 @@ def exp(filepath, search_mode):
     else:
         raise ValueError("This search mode does not exist!")
     
-    interval = time.time() - start_time  
+    interval = time.time() - start_time
     print('\tTime : ' + str(interval))
-    print('\tNB node explored : ' + str(problem.nbNodesExplored))
+    print('\tNB node explored : ' + str(problem.nb_explored_nodes))
     
     # example of print
     path = node.path()
@@ -49,4 +50,4 @@ if __name__ == "__main__":
         print("\n\nInstance " + instance + " :")
         for search_mode in search_modes:
             print("\n" + search_mode)
-            exp("instances/" + instance, search_mode)
+            exp("instances/" + instance, search_mode, 10)
